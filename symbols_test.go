@@ -55,3 +55,18 @@ func BenchmarkSymbolsAdd(b *testing.B) {
 		_ = ss.AddString(str)
 	}
 }
+
+func BenchmarkSymbolsGet(b *testing.B) {
+	ss := symbols.Symbols{}
+	str := "foo asdf a daf asdf asdfasdfa asdfd"
+	for i := 0; i < 1e6; i++ {
+		_ = ss.AddString(str)
+	}
+	sym := ss.AddString(str)
+	b.ResetTimer()
+	b.ReportAllocs()
+	for i := 0; i < b.N; i++ {
+		s := ss.GetString(sym)
+		_ = s
+	}
+}

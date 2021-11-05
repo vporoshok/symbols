@@ -26,7 +26,7 @@ func (symbols *Symbols) AddString(s string) Symbol {
 	if len(s) > LongGuard {
 		i := len(symbols.longStrings)
 		symbols.longStrings = append(symbols.longStrings, s)
-		return Symbol(1<<63) | Symbol(i)
+		return 0x8000000000000000 | Symbol(i)
 	}
 	if len(symbols.pages) == 0 || symbols.index+len(s)+1 > PageSize {
 		symbols.pages = append(symbols.pages, [PageSize]byte{})
@@ -43,7 +43,7 @@ func (symbols Symbols) GetString(sym Symbol) string {
 	if sym>>63 == 1 {
 		return symbols.longStrings[sym^1<<63]
 	}
-	page := symbols.pages[sym>>32]
+	page := symbols.pages[sym>>32][:]
 	index := int(sym << 32 >> 32)
 	length := int(page[index])
 	b := page[index+1 : index+1+length]
