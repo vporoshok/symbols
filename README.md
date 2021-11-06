@@ -1,6 +1,3 @@
-# symbols
-Deduplicated and GC-friendly string store
-
 # Symbols
 
 <!-- [![Travis Build](https://travis-ci.com/vporoshok/project.svg?branch=master)](https://travis-ci.com/vporoshok/project) -->
