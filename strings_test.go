@@ -13,7 +13,7 @@ func TestStrings(t *testing.T) {
 		"buz",
 		"qux",
 	}
-	ss := symbols.Symbols{}
+	ss := symbols.Store{}
 	sym := symbols.AddStrings(&ss, src)
 	res := symbols.GetStrings(ss, sym)
 	if len(res) != len(src) {

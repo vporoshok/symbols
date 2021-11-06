@@ -19,7 +19,7 @@ func TestDictionary_quick(t *testing.T) {
 }
 
 func BenchmarkDictionaryAdd(b *testing.B) {
-	ss := symbols.Symbols{}
+	ss := symbols.Dictionary{}
 	b.ReportAllocs()
 	str := "foo asdf a daf asdf asdfasdfa asdfd"
 	for i := 0; i < b.N; i++ {
