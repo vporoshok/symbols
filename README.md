@@ -111,13 +111,17 @@ Store has two parts:
 1. slice of pages for small strings;
 2. slice of long strings as is;
 
-Short strings (less or equal 255 bytes) stored in pages (1 MB byte arrays) with prefix byte with it length, for example:
+Short strings (less or equal 1<<12 - 1 bytes) stored in pages (1 MB byte arrays), for example:
 ```
-[4, J, o, h, n, 9, d, e, v, e, l, o, p, e, r, 6, g, o, l, a, n, g, 7, b, c, y, c, l, e, 4, M, a, r, y, ...]
+[J, o, h, n, d, e, v, e, l, o, p, e, r, g, o, l, a, n, g, b, i, c, y, c, l, e, M, a, r, y, ...]
 ```
-And Symbol for it represents two uin32 numbers (page number and index of byte with length) stored as an uint64.
+And Symbol for it represents next bits:
+- 1 bit with zero (see long strings store);
+- 31 bit with page number;
+- 12 bit with length of string;
+- 20 bit with index of string in the page;
 
-If string to be add is longer then rest of current page, a new page is being created, so pages may be incomplete (less than 256 bytes per page, less than 0.01%).
+If string to be add is longer then rest of current page, a new page is being created, so pages may be incomplete (less than 2KB per 1MB page, less than 0.2%).
 
 Long strings stored as is in separate slice and Symbol for it represents index in this slice with 1 at first bit.
 
@@ -134,6 +138,5 @@ Original Phil's Pearl projects [stringbank](https://github.com/philpearl/stringb
 
 ## Roadmap
 
-- Store string length in Symbol instead of page;
 - Optimize long string store;
 - May be add methods to save/restore Store to/from file or writer/reader (how to use it?);

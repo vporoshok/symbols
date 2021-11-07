@@ -12,3 +12,7 @@ cover: test ## Check coverage
 	@sed -i '/\(pb\|easyjson\|string\)\.go/d' coverage.out
 	@go tool cover -func=.coverprofile | tail -n 1 | awk '{print "Total coverage:", $$3;}'
 	@test `go tool cover -func=.coverprofile | tail -n 1 | awk '{print $$3;}' | sed 's/\..*//'` -ge 70
+
+NAME = "."
+bench: ## Run benchmark and tee it in file. Use make NAME=Dictionary bench
+	go test -run=^# -count=5 -bench=$(NAME) . | tee `git rev-parse --short HEAD`-$(NAME).bench
