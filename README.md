@@ -123,13 +123,9 @@ Long strings stored as is in separate slice and Symbol for it represents index i
 
 ### Dictionary
 
-## Key features
-
-List of features that may help to decide use this project.
-
 ## See also
 
-List of inspiration projects, alternatives, and analogs. Maybe some comparisons if it's important.
+Original
 
 ## Roadmap
 
