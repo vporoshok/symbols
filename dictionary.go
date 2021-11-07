@@ -2,12 +2,16 @@ package symbols
 
 import "github.com/cespare/xxhash/v2"
 
+// Dictionary deduplicate wrapper for Store
+//
+// Use it on filling Store and use dict.Store in runtime to reduce memory utilization.
 type Dictionary struct {
 	Store
 	shortIndex map[uint64]Symbol
 	longIndex  map[string]Symbol
 }
 
+// AddString check string to duplicate and return existed Symbol or create new
 func (dict *Dictionary) AddString(s string) Symbol {
 	if len(s) > LongGuard {
 		return dict.Store.AddString(s)

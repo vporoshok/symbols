@@ -1,38 +1,27 @@
 package symbols_test
 
 import (
-	"strings"
 	"testing"
 	"testing/quick"
 
 	"github.com/vporoshok/symbols"
+
+	"github.com/brianvoe/gofakeit/v6"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestSymbols_short(t *testing.T) {
+func TestSymbols(t *testing.T) {
+	src := make([]string, gofakeit.Number(10, 100))
+	for i := range src {
+		src[i] = gofakeit.Sentence(gofakeit.Number(1, 100))
+	}
 	store := symbols.Store{}
-	foo := store.AddString("foo")
-	bar := store.AddString("bar")
-	if store.GetString(foo) != "foo" {
-		t.Logf(`expected "foo", got %q`, store.GetString(foo))
-		t.Fail()
+	sym := make([]symbols.Symbol, len(src))
+	for i := range sym {
+		sym[i] = store.AddString(src[i])
 	}
-	if store.GetString(bar) != "bar" {
-		t.Logf(`expected "bar", got %q`, store.GetString(bar))
-		t.Fail()
-	}
-}
-
-func TestSymbols_long(t *testing.T) {
-	store := symbols.Store{}
-	foo := store.AddString(strings.Repeat("foo", 100))
-	bar := store.AddString(strings.Repeat("bar", 100))
-	if store.GetString(foo) != strings.Repeat("foo", 100) {
-		t.Logf(`expected "foo"*100, got %q`, store.GetString(foo))
-		t.Fail()
-	}
-	if store.GetString(bar) != strings.Repeat("bar", 100) {
-		t.Logf(`expected "bar"*100, got %q`, store.GetString(bar))
-		t.Fail()
+	for i := range src {
+		assert.Equal(t, src[i], store.GetString(sym[i]))
 	}
 }
 
@@ -50,7 +39,7 @@ func TestSymbols_quick(t *testing.T) {
 func BenchmarkSymbolsAdd(b *testing.B) {
 	store := symbols.Store{}
 	b.ReportAllocs()
-	str := "foo asdf a daf asdf asdfasdfa asdfd"
+	str := ""
 	for i := 0; i < b.N; i++ {
 		_ = store.AddString(str)
 	}
@@ -58,7 +47,8 @@ func BenchmarkSymbolsAdd(b *testing.B) {
 
 func BenchmarkSymbolsGet(b *testing.B) {
 	store := symbols.Store{}
-	str := "foo asdf a daf asdf asdfasdfa asdfd"
+	str := "This library helps to store big number of strings in structure" +
+		"with small number of pointers to make it friendly to Go garbage collector."
 	for i := 0; i < 1e6; i++ {
 		_ = store.AddString(str)
 	}

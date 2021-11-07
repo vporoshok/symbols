@@ -1,6 +1,6 @@
 # Symbols
 
-<!-- [![Travis Build](https://travis-ci.com/vporoshok/project.svg?branch=master)](https://travis-ci.com/vporoshok/project) -->
+[![Test](https://github.com/vporoshok/symbols/actions/workflows/test.yml/badge.svg)](https://github.com/vporoshok/symbols/actions/workflows/test.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/vporoshok/symbols)](https://goreportcard.com/report/github.com/vporoshok/symbols)
 [![GoDoc](http://img.shields.io/badge/GoDoc-Reference-blue.svg)](https://godoc.org/github.com/vporoshok/symbols)
 [![codecov](https://codecov.io/gh/vporoshok/symbols/branch/main/graph/badge.svg)](https://codecov.io/gh/vporoshok/symbols)
@@ -123,13 +123,17 @@ Long strings stored as is in separate slice and Symbol for it represents index i
 
 ### Dictionary
 
+Dictionary is a Store Wrapper to deduplicate strings. It use map of xxhashes of strings as short index and long index `map[string]Symbol` on collision short index.
+
 ## See also
 
-Original
+Original Phil's Pearl projects [stringbank](https://github.com/philpearl/stringbank) and [intern](https://github.com/philpearl/intern)
+- store all strings independ of it length in pages that may cause a lot of unused space;
+- use slices as pages that add more pointers and unneeded length int per page;
+- use maphash to deduplicate, that is slower than xxhash;
 
 ## Roadmap
 
-- Configure Github Actions for project;
 - Store string length in Symbol instead of page;
 - Optimize long string store;
 - May be add methods to save/restore Store to/from file or writer/reader (how to use it?);

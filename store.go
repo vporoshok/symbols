@@ -5,10 +5,13 @@ import (
 )
 
 const (
-	PageSize  = 1 << 20
+	// PageSize 1MB
+	PageSize = 1 << 20
+	// LongGuard length of string to store outside of pages and not to check on duplicates
 	LongGuard = 255
 )
 
+// Store of strings
 type Store struct {
 	index, length int
 	pages         [][PageSize]byte
@@ -16,11 +19,9 @@ type Store struct {
 }
 
 // Symbol reference to string stored in Symbols
-//
-// If first bit is 1 (s >> 63 == 1) this is long string placed in longStrings store.
-// Otherwise Symbol should be interpreted as 31-bit number of page and 32-bit index in this page.
 type Symbol uint64
 
+// AddString to store
 func (store *Store) AddString(s string) Symbol {
 	store.length++
 	if len(s) > LongGuard {
@@ -39,6 +40,7 @@ func (store *Store) AddString(s string) Symbol {
 	return Symbol(index) | Symbol(pageNumber)<<32
 }
 
+// GetString from store by reference
 func (store Store) GetString(sym Symbol) string {
 	if sym>>63 == 1 {
 		return store.longStrings[sym^1<<63]
@@ -47,9 +49,11 @@ func (store Store) GetString(sym Symbol) string {
 	index := int(sym << 32 >> 32)
 	length := int(page[index])
 	b := page[index+1 : index+1+length]
+	//nolint:gosec // reuse exists memory to reduce allocations
 	return *(*string)(unsafe.Pointer(&b))
 }
 
+// Len count of strings in store
 func (store Store) Len() int {
 	return store.length
 }
