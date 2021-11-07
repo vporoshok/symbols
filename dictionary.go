@@ -38,3 +38,9 @@ func (dict *Dictionary) AddString(s string) Symbol {
 	dict.longIndex[s] = sym
 	return sym
 }
+
+// DropIndex clean map to reduce memory utilization
+func (dict *Dictionary) DropIndex() {
+	dict.shortIndex = nil
+	dict.longIndex = nil
+}
