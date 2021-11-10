@@ -72,19 +72,17 @@ type dumpHeader struct {
 func (store Store) Dump() io.ReadCloser {
 	pr, pw := io.Pipe()
 	go func() {
+		lw := lz4.NewWriter(pw)
 		defer func() {
+			_ = lw.Close()
 			_ = pw.Close()
 		}()
-		_ = binary.Write(pw, binary.LittleEndian, dumpHeader{
+		_ = binary.Write(lw, binary.LittleEndian, dumpHeader{
 			Index:  uint32(store.index),
 			Length: uint32(store.length),
 			Pages:  uint32(len(store.pages)),
 			Longs:  uint32(len(store.longStrings)),
 		})
-		lw := lz4.NewWriter(pw)
-		defer func() {
-			_ = lw.Close()
-		}()
 		for i := range store.pages {
 			_, _ = lw.Write(store.pages[i][:])
 		}
@@ -99,7 +97,8 @@ func (store Store) Dump() io.ReadCloser {
 // Restore data from compressed dump
 func Restore(r io.Reader) (Store, error) {
 	var header dumpHeader
-	if err := binary.Read(r, binary.LittleEndian, &header); err != nil {
+	lr := lz4.NewReader(r)
+	if err := binary.Read(lr, binary.LittleEndian, &header); err != nil {
 		return Store{}, fmt.Errorf("read header: %w", err)
 	}
 	store := Store{
@@ -108,7 +107,6 @@ func Restore(r io.Reader) (Store, error) {
 		pages:       make([][PageSize]byte, header.Pages),
 		longStrings: make([]string, header.Longs),
 	}
-	lr := lz4.NewReader(r)
 	for i := range store.pages {
 		if _, err := lr.Read(store.pages[i][:]); err != nil {
 			return store, fmt.Errorf("read %d page: %w", i, err)
