@@ -139,4 +139,3 @@ Original Phil's Pearl projects [stringbank](https://github.com/philpearl/stringb
 ## Roadmap
 
 - Optimize long string store;
-- May be add methods to save/restore Store to/from file or writer/reader (how to use it?);

@@ -8,6 +8,7 @@ import (
 
 	"github.com/brianvoe/gofakeit/v6"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSymbols(t *testing.T) {
@@ -22,6 +23,28 @@ func TestSymbols(t *testing.T) {
 	}
 	for i := range src {
 		assert.Equal(t, src[i], store.GetString(sym[i]))
+	}
+}
+
+func TestSymbolsDumpRestore(t *testing.T) {
+	src := make([]string, gofakeit.Number(10, 1e2))
+	for i := range src {
+		src[i] = gofakeit.Sentence(gofakeit.Number(1, 1e3))
+	}
+	store := symbols.Store{}
+	sym := make([]symbols.Symbol, len(src))
+	for i := range sym {
+		sym[i] = store.AddString(src[i])
+	}
+
+	r := store.Dump()
+	defer func() {
+		_ = r.Close()
+	}()
+	res, err := symbols.Restore(r)
+	require.NoError(t, err)
+	for i := range src {
+		assert.Equal(t, src[i], res.GetString(sym[i]))
 	}
 }
 

@@ -1,7 +1,12 @@
 package symbols
 
 import (
+	"encoding/binary"
+	"fmt"
+	"io"
 	"unsafe"
+
+	"github.com/pierrec/lz4/v4"
 )
 
 const (
@@ -57,4 +62,69 @@ func (store Store) GetString(sym Symbol) string {
 // Len count of strings in store
 func (store Store) Len() int {
 	return store.length
+}
+
+type dumpHeader struct {
+	Index, Length, Pages, Longs uint32
+}
+
+// Dump data with comression
+func (store Store) Dump() io.ReadCloser {
+	pr, pw := io.Pipe()
+	go func() {
+		defer func() {
+			_ = pw.Close()
+		}()
+		_ = binary.Write(pw, binary.LittleEndian, dumpHeader{
+			Index:  uint32(store.index),
+			Length: uint32(store.length),
+			Pages:  uint32(len(store.pages)),
+			Longs:  uint32(len(store.longStrings)),
+		})
+		lw := lz4.NewWriter(pw)
+		defer func() {
+			_ = lw.Close()
+		}()
+		for i := range store.pages {
+			_, _ = lw.Write(store.pages[i][:])
+		}
+		for i := range store.longStrings {
+			_ = binary.Write(lw, binary.LittleEndian, uint32(len(store.longStrings[i])))
+			_, _ = lw.Write([]byte(store.longStrings[i]))
+		}
+	}()
+	return pr
+}
+
+// Restore data from compressed dump
+func Restore(r io.Reader) (Store, error) {
+	var header dumpHeader
+	if err := binary.Read(r, binary.LittleEndian, &header); err != nil {
+		return Store{}, fmt.Errorf("read header: %w", err)
+	}
+	store := Store{
+		index:       int(header.Index),
+		length:      int(header.Length),
+		pages:       make([][PageSize]byte, header.Pages),
+		longStrings: make([]string, header.Longs),
+	}
+	lr := lz4.NewReader(r)
+	for i := range store.pages {
+		if _, err := lr.Read(store.pages[i][:]); err != nil {
+			return store, fmt.Errorf("read %d page: %w", i, err)
+		}
+	}
+	for i := range store.longStrings {
+		var l int32
+		if err := binary.Read(lr, binary.LittleEndian, &l); err != nil {
+			return store, fmt.Errorf("read %d long string length: %w", i, err)
+		}
+		buf := make([]byte, l)
+		if _, err := lr.Read(buf); err != nil {
+			return store, fmt.Errorf("read %d long string: %w", i, err)
+		}
+		//nolint:gosec // reuse exists memory to reduce allocations
+		store.longStrings[i] = *(*string)(unsafe.Pointer(&buf))
+	}
+	return store, nil
 }
