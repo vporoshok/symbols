@@ -46,6 +46,8 @@ func TestSymbolsDumpRestore(t *testing.T) {
 	for i := range src {
 		assert.Equal(t, src[i], res.GetString(sym[i]))
 	}
+
+	assert.Equal(t, store.State(), res.State())
 }
 
 func TestSymbols_quick(t *testing.T) {

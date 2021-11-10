@@ -126,3 +126,17 @@ func Restore(r io.Reader) (Store, error) {
 	}
 	return store, nil
 }
+
+// StoreState static information of the store
+type StoreState struct {
+	Symbols, Pages, LongStrings int
+}
+
+// State of the store
+func (store Store) State() StoreState {
+	return StoreState{
+		Symbols:     store.length,
+		Pages:       len(store.pages),
+		LongStrings: len(store.longStrings),
+	}
+}

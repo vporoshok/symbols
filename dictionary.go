@@ -44,3 +44,18 @@ func (dict *Dictionary) DropIndex() {
 	dict.shortIndex = nil
 	dict.longIndex = nil
 }
+
+// DictionaryState static information of the dictionary
+type DictionaryState struct {
+	StoreState
+	ShortIndex, LongIndex int
+}
+
+// State of the dictionary
+func (dict Dictionary) State() DictionaryState {
+	return DictionaryState{
+		StoreState: dict.Store.State(),
+		ShortIndex: len(dict.shortIndex),
+		LongIndex:  len(dict.longIndex),
+	}
+}
